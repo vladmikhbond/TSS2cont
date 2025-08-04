@@ -2,9 +2,6 @@ from typing import Dict
 from fastapi import APIRouter, Request
 from ..data_alch import read_all_probs
 
-
-
-
 router = APIRouter()
 
 @router.get("/probs")
