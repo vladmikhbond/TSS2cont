@@ -3,7 +3,7 @@ import subprocess
 js_code = """
 function _f(n)  {
 //BEGIN
-let111 m = n % 100;
+let m = n % 100;
 //END
 return m;
 }
@@ -14,7 +14,7 @@ if (_f(23456) != 56)
 throw new Error('OK');
 """
 
-def execJS(js_code):
+def execJS(js_code, timeout):
     try:
         # Виконуємо node з кодом через stdin
         result = subprocess.run(
@@ -22,7 +22,7 @@ def execJS(js_code):
             input=js_code,
             capture_output=True,
             text=True,
-            timeout=1,
+            timeout=timeout,
             check=True
         )
         return "OK. " + result.stdout
@@ -37,4 +37,4 @@ def execJS(js_code):
     except FileNotFoundError:
         return "Node.js не встановлений або не доданий до PATH."
 
-print(execJS(js_code))
+print(execJS(js_code, 1))
