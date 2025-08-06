@@ -1,5 +1,5 @@
 import json, os
-from .models import Item
+from .models.models import Item
 from datetime import datetime
 
 # файл має знаходитися в кореневому каталозі пакета

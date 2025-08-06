@@ -1,8 +1,10 @@
 import os
-from .models import Item, Problem
+
 import datetime as dt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from .models.models import Problem
+
 
 # файл .db має знаходитися в кореневому каталозі пакета chat
 DATA_BASE = os.path.join(os.path.dirname(__file__), "TSS2.db")
@@ -14,6 +16,11 @@ def read_all_probs() -> list[Problem]:
     with Session(engine) as session:
         probs = session.query(Problem).all()
     return probs
+
+def read_prob(id: str) -> Problem:
+    with Session(engine) as session:
+        problem = session.query(Problem).filter(Problem.id == id).first()
+    return problem
 
 
 # def add_item(message: str, sign: str):

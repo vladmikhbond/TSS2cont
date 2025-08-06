@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from .models import Item
+from .models.models import Item
 import datetime as dt
 
 # файл має знаходитися в кореневому каталозі пакета
