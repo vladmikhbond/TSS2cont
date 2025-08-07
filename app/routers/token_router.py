@@ -42,11 +42,14 @@ def authenticate_user(username: str, password: str) -> bool:
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    Створює валідний токен.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -56,6 +59,10 @@ def get_user(username):
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    """
+    Перевіряє валідність токену.
+    Знаходить і повертає юзера, чіє ім'я записано в токені.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -67,6 +74,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
+
     except InvalidTokenError:
         raise credentials_exception
     user = get_user(username=token_data.username)
@@ -79,7 +87,8 @@ router = APIRouter()
 
 @router.post("/token")
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()] ) -> Token:
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()] 
+) -> Token:
 
     ok = authenticate_user(form_data.username, form_data.password)
     if not ok:

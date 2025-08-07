@@ -36,12 +36,13 @@ class ProblemSchema(BaseModel):
     class Config:
         # orm_mode = True
         from_attributes=True
+        
 
-class PostCheck(BaseModel):
+class CheckSchema(BaseModel):
     id: str
     solving: str
 
-class PostProof(BaseModel):
+class ProofSchema(BaseModel):
     source: str
     lang: str
 

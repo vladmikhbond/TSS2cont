@@ -17,10 +17,16 @@ def read_all_problems() -> list[Problem]:
         probs = session.query(Problem).all()
     return probs
 
+
 def read_problem(id: str) -> Problem:
-    with Session(engine) as session:
-        problem = session.query(Problem).filter(Problem.id == id).first()
-    return problem
+    try:
+        with Session(engine) as session:
+            problem = session.query(Problem).filter(Problem.id == id).first()
+        return problem
+    except Exception as e:
+        print(f"Error reading problem with id={id}: {e}")
+        return None
+
 
 def read_problems_lang(lang: str) -> list[Problem]:
     with Session(engine) as session:
@@ -28,14 +34,11 @@ def read_problems_lang(lang: str) -> list[Problem]:
     return problems
 
 
-# def add_item(message: str, sign: str):
-#     datetime=dt.datetime.now().isoformat()
-#     item = Item(message=message, sign=sign, datetime=datetime)
-
-#     with Session(engine) as session:
-#         session.add(item)        # додаємо об'єкт
-#         session.commit()         # зберігаємо зміни
-#         session .refresh(item)   # оновлюємо стан об'єкта
+def add_problem(problem: Problem):
+    with Session(engine) as session:
+        session.add(problem)        # додаємо об'єкт
+        session.commit()         # зберігаємо зміни
+        
 
        
         

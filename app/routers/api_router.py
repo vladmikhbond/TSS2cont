@@ -1,9 +1,10 @@
 from typing import Annotated, Dict
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from .. import data_alch as db
-from ..models.models import Problem, PostProof, PostCheck, ProblemSchema
+from ..models.models import Problem, ProofSchema, CheckSchema, ProblemSchema
 from ..executors import js
+import uuid
 
 
 import re
@@ -13,7 +14,7 @@ router = APIRouter()
 # ============ Відкриті маршрути =============================
 
 @router.post("/check")
-async def post_check(schema: PostCheck) -> str:
+async def post_check(schema: CheckSchema) -> str:
     """
     POST /api/check
 
@@ -29,7 +30,7 @@ async def post_check(schema: PostCheck) -> str:
      
 
 @router.post("/proof")
-async def post_proof(schema: PostProof) -> str:
+async def post_proof(schema: ProofSchema) -> str:
     """
     POST /api/proof
 
@@ -52,11 +53,15 @@ def exec_helper(lang:str, source: str, timeout: float):
 
 # ============ Закриті маршрути =============================
 
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from .token_router import get_current_user
+
+
+AuthType = Annotated[str, Depends(get_current_user)]
 
 @router.get("/problems/lang")
-async def get_problems_lang(lang: str, token: Annotated[str, Depends(oauth2_scheme)]) -> list[ProblemSchema]:
+async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
     """
     GET  /api/problems/lang/{lang}
 
@@ -65,7 +70,39 @@ async def get_problems_lang(lang: str, token: Annotated[str, Depends(oauth2_sche
     problems: list[Problem] = db.read_problems_lang(lang)
     # schemas: list[ProblemSchema] = [ProblemSchema.from_orm(p) for p in problems]
     return problems 
+
+
+@router.get("/problems/{id}")
+async def get_problems_id(id: str,
+                          user: AuthType
+                          ) -> ProblemSchema:
+    """
+    GET  /api/problems/{id}
+
+    Повертає задачу з заданим id.
+    """
+    problem = db.read_problem(id) 
+    if problem == None:
+        raise HTTPException(status_code=404, detail=f"Error reading problem with id={id}")    
+    problem_schema = ProblemSchema.model_validate(problem)
+    return problem_schema
+
+
+@router.post("/problems")
+async def put_problems(problem_schema: ProblemSchema,
+                       user: AuthType
+                       ):
+    """
+    POST /api/problems
     
+    Перевіряє код і, якщо він годний, додає нову задачу в базу даних.
+    """
+    message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
+    if message.startswith("OK"):    
+        problem_schema.id = str(uuid.uuid4())
+        problem = Problem(**problem_schema.model_dump())
+        db.add_problem(problem)
+    return message
 
 
 
