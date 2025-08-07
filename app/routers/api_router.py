@@ -64,7 +64,7 @@ async def get_problems_lang(lang: str, token: Annotated[str, Depends(oauth2_sche
     """
     problems: list[Problem] = db.read_problems_lang(lang)
     # schemas: list[ProblemSchema] = [ProblemSchema.from_orm(p) for p in problems]
-    return problems
+    return problems 
     
 
 
