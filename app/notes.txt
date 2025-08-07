@@ -9,18 +9,17 @@ POST /api/proof
   "lang": "string"
 }
 
-
 POST /api/check
 {
   "id": string,
   "solving": "string"
 }
 
-GET  /api/tasks/{sample}
+GET  /api/problems/lang/{lang}
 
-GET  /api/task/{id}
+GET  /api/problems/{id}
 
-PUT /api/tasks/{id}
+PUT /api/problems/{id}
 {
   "id": 0,
   "title": "string",
@@ -32,9 +31,9 @@ PUT /api/tasks/{id}
   "code": "string"
 }
 
-DELETE /api/tasks/{id}
+DELETE /api/problems/{id}
 
-POST /api/tasks
+POST /api/problems
 {
   "id": 0,
   "title": "string",

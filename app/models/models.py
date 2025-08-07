@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import DeclarativeBase
 from pydantic import BaseModel
+from datetime import datetime
 
 class Base(DeclarativeBase):
     pass
@@ -20,6 +21,21 @@ class Problem(Base):
     author: Mapped[str] = mapped_column(String(10))  
     timestamp: Mapped[str] = mapped_column(DateTime)
 
+class ProblemSchema(BaseModel):
+    id: str
+    title: str
+    attr: str
+    lang: str
+    cond: str
+    view: str
+    hint: str
+    code: str
+    author: str
+    timestamp: datetime
+
+    class Config:
+        # orm_mode = True
+        from_attributes=True
 
 class PostCheck(BaseModel):
     id: str
