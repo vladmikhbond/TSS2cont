@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 import jwt
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jwt.exceptions import InvalidTokenError
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
@@ -67,34 +66,6 @@ def authenticate_user(fake_db, username: str, password: str):
         return False
     return user
 
-# -------------- Безпекова залежність --------------------
-
-# Витягує токен із запиту. Перевіряє лише наявність токену, а не його зміст.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    """
-    Розшифровує токен, використовуючі SECRET_KEY, ALGORITHM.
-    За даними з токену знаходить користувача в БД і повертає його.
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except InvalidTokenError:
-        raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
-
 # -------------- Створення токену --------------------
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -133,3 +104,61 @@ async def login_for_access_token(
         expires_delta=timedelta(minutes=15)  # видихнеться за 15 хвилин
     )
     return Token(access_token=access_token, token_type="bearer")
+
+
+
+# -------------- Безпекова залежність --------------------
+
+from fastapi.security import OAuth2PasswordBearer
+
+# Це каже FastAPI, що токен треба брати з заголовка
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    """
+    Розшифровує токен, використовуючі SECRET_KEY, ALGORITHM.
+    За даними з токену знаходить користувача в БД і повертає його.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+    user = get_user(fake_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+@app.get("/add/{a}/{b}")
+async def add( a: int, b: int, user: User = Depends(get_current_user) ) -> int:
+    return a + b
+
+# from fastapi import FastAPI, Security, HTTPException, status
+# from fastapi.security.api_key import APIKeyHeader
+
+
+# # 1️⃣ Оголошуємо схему безпеки (з'явиться в OpenAPI)
+# api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
+
+# # 2️⃣ Безпекова залежність з цією схемою
+# async def get_api_key(api_key: str = Security(api_key_header)):
+#     if api_key != "secret123":
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Invalid or missing API key"
+#         )
+#     return {"role": "admin", "name": "Alice"}
+
+# # 3️⃣ Захищена точка (Swagger тепер покаже замок 🔒)
+# @app.get("/protected")
+# async def protected_route(user_info: dict = Security(get_api_key)):
+#     return {"message": f"Welcome, {user_info['name']}!"}
+

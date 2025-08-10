@@ -27,14 +27,17 @@ RUN python --version && node --version && npm --version
 
 # Копіюємо requirements.txt у контейнер (опціонально — VS Code і сам це зробить)
 COPY requirements.txt /tmp/requirements.txt
+COPY app /app
+
 
 # Встановлюємо Python-залежності
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
                                  
+# Відкриваємо порт
+EXPOSE 8000
+
+
 # Робоча директорія в контейнері
-WORKDIR /app
+WORKDIR /
 
-# # Відкриваємо порт
-# EXPOSE 8000
-
-
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

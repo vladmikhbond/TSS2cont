@@ -7,7 +7,7 @@ from .models.models import Problem
 
 
 # файл .db має знаходитися в кореневому каталозі пакета chat
-DATA_BASE = os.path.join(os.path.dirname(__file__), "TSS2.db")
+DATA_BASE = os.path.join(os.path.dirname(__file__), "/data/TSS2.db")
 
 engine = create_engine(f"sqlite:///{DATA_BASE}", echo=True)
 
