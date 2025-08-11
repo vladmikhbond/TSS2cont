@@ -1,22 +1,11 @@
+data/
+
 # Python
 __pycache__/
-*.py[cod]
-*.env
-*.venv
-env/
-venv/
-ENV/
-*.egg-info/
-dist/
-build/
-*.log
+.mypy_cache/
 
 # VS Code
 .vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
 
 # Uvicorn logs
 *.pid
