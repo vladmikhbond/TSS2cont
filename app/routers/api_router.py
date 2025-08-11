@@ -1,10 +1,11 @@
-from typing import Annotated, Dict
+import datetime as dt
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from .. import data_alch as db
 from ..models.models import Problem, ProofSchema, CheckSchema, ProblemSchema
 from ..executors import js
-import uuid
+
 
 
 import re
@@ -61,7 +62,9 @@ from .token_router import get_current_user
 AuthType = Annotated[str, Depends(get_current_user)]
 
 @router.get("/problems/lang")
-async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
+async def get_problems_lang(lang: str, 
+        # user: AuthType
+    ) -> list[ProblemSchema]:
     """
     GET  /api/problems/lang/{lang}
 
@@ -74,7 +77,7 @@ async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
 
 @router.get("/problems/{id}")
 async def get_problems_id(id: str,
-                          user: AuthType
+                        #   user: AuthType
                           ) -> ProblemSchema:
     """
     GET  /api/problems/{id}
@@ -90,8 +93,8 @@ async def get_problems_id(id: str,
 
 @router.post("/problems")
 async def put_problems(problem_schema: ProblemSchema,
-                       user: AuthType
-                       ):
+                    #    user: AuthType
+                       ) :
     """
     POST /api/problems
     
@@ -99,9 +102,31 @@ async def put_problems(problem_schema: ProblemSchema,
     """
     message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
     if message.startswith("OK"):    
-        problem_schema.id = str(uuid.uuid4())
+
         problem = Problem(**problem_schema.model_dump())
-        db.add_problem(problem)
+ 
+        added_problem = db.add_problem(problem)
+        if added_problem is None:
+            raise HTTPException(status_code=400, detail="The problem is not added")
+    return message
+
+
+@router.put("/problems")
+async def put_problems(problem_schema: ProblemSchema,
+                    #    user: AuthType
+                       ):
+    """
+    PUT /api/problems
+    
+    Перевіряє код і, якщо він годний, змінює задачу в базі даних.
+    """
+    message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
+    if message.startswith("OK"):          
+        problem = Problem(**problem_schema.model_dump())
+        changed_problem = db.edit_problem(problem)
+        changed_problem.timestamp = dt.datetime.now() 
+        if changed_problem is None:
+            raise HTTPException(status_code=400, detail="The problem is not changed")
     return message
 
 

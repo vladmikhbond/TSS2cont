@@ -1,15 +1,14 @@
-import os
-
 import datetime as dt
+import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from .models.models import Problem
+from sqlalchemy.inspection import inspect 
+import logging
+from sqlalchemy.exc import SQLAlchemyError
 
 
-# файл .db має знаходитися в кореневому каталозі пакета chat
-DATA_BASE = os.path.join(os.path.dirname(__file__), "/data/TSS2.db")
-
-engine = create_engine(f"sqlite:///{DATA_BASE}", echo=True)
+engine = create_engine(f"sqlite:////data/TSS2.db", echo=True)
 
 
 def read_all_problems() -> list[Problem]:
@@ -35,10 +34,52 @@ def read_problems_lang(lang: str) -> list[Problem]:
 
 
 def add_problem(problem: Problem):
-    with Session(engine) as session:
-        session.add(problem)        # додаємо об'єкт
-        session.commit()         # зберігаємо зміни
-        
+    problem.id = str(uuid.uuid4())
+    problem.timestamp = dt.datetime.now()
+    try:
+        with Session(engine) as session:
+            session.add(problem)
+            session.commit()
+            session.refresh(problem)  # Отримати оновлені значення з БД
+        return problem
+    except SQLAlchemyError as e:
+        logging.error(f"Error adding problem '{problem.title}': {e}")
+        with Session(engine) as session:
+            session.rollback()
+        return None
+  
+
+def edit_problem(problem: Problem) -> Problem | None:
+    problem.timestamp = dt.datetime.now()
+    try:
+        with Session(engine) as session:
+            problem_to_edit = session.query(Problem).filter(Problem.id == problem.id).first()
+            
+            # copy problem to problem_to_edit
+            mapper = inspect(problem.__class__)
+            for column in mapper.columns:
+                if column.primary_key:
+                    continue
+                value = getattr(problem, column.key)
+                setattr(problem_to_edit, column.key, value)
+
+            session.commit()
+            return problem_to_edit
+    except Exception as e:
+        print(f"Error editing problem with id={problem.id}: {e}")
+        return None
 
        
-        
+def delete_problem(id: str) -> Problem | None:
+    try:
+        with Session(engine) as session:
+            problem = session.query(Problem).filter(Problem.id == id).first()
+            # problem = session.get(Problem, id)
+            problem.delete()
+            session.commit()
+        return problem
+    except Exception as e:
+        print(f"Error reading problem with id={id}: {e}")
+        return None
+
+  

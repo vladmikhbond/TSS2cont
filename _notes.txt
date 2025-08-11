@@ -66,7 +66,7 @@ DELETE /api/problems/{id}
 
 --- test for POST /api/problems  4b1aa936-9d3c-40a8-b4c8-154c2d2ccecd - it exists
   {
-    "id": "5b1aa936-9d3c-40a8-b4c8-154c2d2ccecd",
+    "id": "",
     "title": "TEST TEST TEST TEST TEST TEST TEST TEST Скільки секунд",
     "attr": "js/01 Числа та вирази",
     "lang": "js",
