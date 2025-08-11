@@ -60,7 +60,7 @@ DELETE /api/problems/{id}
 
 --- test for POST /api/check
 {
-  "id": "4b1aa936-9d3c-40a8-b4c8-154c2d2ccecd",      492e7833-7a68-4c00-b906-72410e6af4be
+  "id": "4b1aa936-9d3c-40a8-b4c8-154c2d2ccecd",      
   "solving": "let sec = 366 * 24 * 60 * 60"
 }
 

@@ -1,13 +1,10 @@
 import datetime as dt
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 
 from .. import data_alch as db
 from ..models.models import Problem, ProofSchema, CheckSchema, ProblemSchema
 from ..executors import js
-
-
-
 import re
 
 router = APIRouter()
@@ -17,8 +14,7 @@ router = APIRouter()
 @router.post("/check")
 async def post_check(schema: CheckSchema) -> str:
     """
-    POST /api/check
-
+    POST /api/check   \n
     Знаходить задачу, замінює авторське вирішення користувацьким,
     викликає post_proof()
     """
@@ -33,8 +29,7 @@ async def post_check(schema: CheckSchema) -> str:
 @router.post("/proof")
 async def post_proof(schema: ProofSchema) -> str:
     """
-    POST /api/proof
-
+    POST /api/proof   \n
     Виконує програму, повертає повідомлення про результат.
     Повідомлення про позитивний результат починається з OK
     """
@@ -54,50 +49,38 @@ def exec_helper(lang:str, source: str, timeout: float):
 
 # ============ Закриті маршрути =============================
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException
 from .token_router import get_current_user
 
 
-AuthType = Annotated[str, Depends(get_current_user)]
+AuthType = str # Annotated[str, Depends(get_current_user)]
 
 @router.get("/problems/lang")
-async def get_problems_lang(lang: str, 
-        # user: AuthType
-    ) -> list[ProblemSchema]:
+async def get_problems_lang(lang: str, user: AuthType ):
     """
-    GET  /api/problems/lang/{lang}
-
+    GET  /api/problems/lang/{lang}    \n
     Повертає задачі для заданої мови програмування.
     """
-    problems: list[Problem] = db.read_problems_lang(lang)
-    # schemas: list[ProblemSchema] = [ProblemSchema.from_orm(p) for p in problems]
+    problems = db.read_problems_lang(lang)
     return problems 
 
 
 @router.get("/problems/{id}")
-async def get_problems_id(id: str,
-                        #   user: AuthType
-                          ) -> ProblemSchema:
+async def get_problems_id(id: str, user: AuthType ):
     """
-    GET  /api/problems/{id}
-
+    GET  /api/problems/{id}     \n
     Повертає задачу з заданим id.
     """
     problem = db.read_problem(id) 
     if problem == None:
         raise HTTPException(status_code=404, detail=f"Error reading problem with id={id}")    
-    problem_schema = ProblemSchema.model_validate(problem)
-    return problem_schema
+    return problem
 
 
 @router.post("/problems")
-async def put_problems(problem_schema: ProblemSchema,
-                    #    user: AuthType
-                       ) :
+async def put_problems(problem_schema: ProblemSchema, user: AuthType) :
     """
-    POST /api/problems
-    
+    POST /api/problems     \n
     Перевіряє код і, якщо він годний, додає нову задачу в базу даних.
     """
     message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
@@ -112,12 +95,9 @@ async def put_problems(problem_schema: ProblemSchema,
 
 
 @router.put("/problems")
-async def put_problems(problem_schema: ProblemSchema,
-                    #    user: AuthType
-                       ):
+async def put_problems(problem_schema: ProblemSchema, user: AuthType):
     """
-    PUT /api/problems
-    
+    PUT /api/problems    \n
     Перевіряє код і, якщо він годний, змінює задачу в базі даних.
     """
     message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
@@ -131,20 +111,13 @@ async def put_problems(problem_schema: ProblemSchema,
 
 
 @router.delete("/problems/{id}")
-async def delete_problems_id(id: str,
-                        #   user: AuthType
-                          ) -> ProblemSchema:
+async def delete_problems_id(id: str, user: AuthType):
     """
-    GET  /api/problems/{id}
-
-    Повертає задачу з заданим id.
+    GET  /api/problems/{id}     \n
+    Повертає видалену задачу або None.
     """
     problem = db.delete_problem(id) 
     if problem == None:
         raise HTTPException(status_code=400, detail=f"The problem with id = {id} is not deleted")   
     problem_schema = ProblemSchema.model_validate(problem)
     return problem_schema
-
-
-
-

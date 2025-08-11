@@ -17,7 +17,7 @@ def read_all_problems() -> list[Problem]:
     return probs
 
 
-def read_problem(id: str) -> Problem:
+def read_problem(id: str) -> Problem|None:
     try:
         with Session(engine) as session:
             problem = session.query(Problem).filter(Problem.id == id).first()
@@ -32,21 +32,21 @@ def read_problems_lang(lang: str) -> list[Problem]:
     return problems
 
 
-def add_problem(problem: Problem):
+def add_problem(problem: Problem) -> Problem|None:
     problem.id = str(uuid.uuid4())
     problem.timestamp = dt.datetime.now()
     try:
         with Session(engine) as session:
             session.add(problem)
             session.commit()
-            session.refresh(problem)  # Отримати оновлені значення з БД
+            session.refresh(problem) 
         return problem
     except SQLAlchemyError as e:
         logging.error(f"Error adding problem '{problem.title}': {e}")
         return None
   
 
-def edit_problem(problem: Problem) -> Problem | None:
+def edit_problem(problem: Problem) -> Problem|None:
     problem.timestamp = dt.datetime.now()
     try:
         with Session(engine) as session:
@@ -67,14 +67,13 @@ def edit_problem(problem: Problem) -> Problem | None:
         return None
     
 
-def delete_problem(id: str) -> Problem | None:
+def delete_problem(id: str) -> Problem|None:
     try:
         with Session(engine) as session:
             problem = session.get(Problem, id)
             if not problem:
                 logging.warning(f"Problem with id={id} not found.")
                 return None
-
             session.delete(problem)
             session.commit()
             return problem
