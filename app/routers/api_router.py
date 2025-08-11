@@ -130,4 +130,21 @@ async def put_problems(problem_schema: ProblemSchema,
     return message
 
 
+@router.delete("/problems/{id}")
+async def delete_problems_id(id: str,
+                        #   user: AuthType
+                          ) -> ProblemSchema:
+    """
+    GET  /api/problems/{id}
+
+    Повертає задачу з заданим id.
+    """
+    problem = db.delete_problem(id) 
+    if problem == None:
+        raise HTTPException(status_code=400, detail=f"The problem with id = {id} is not deleted")   
+    problem_schema = ProblemSchema.model_validate(problem)
+    return problem_schema
+
+
+
 

@@ -24,7 +24,6 @@ def read_problem(id: str) -> Problem:
         return problem
     except Exception as e:
         print(f"Error reading problem with id={id}: {e}")
-        return None
 
 
 def read_problems_lang(lang: str) -> list[Problem]:
@@ -44,8 +43,6 @@ def add_problem(problem: Problem):
         return problem
     except SQLAlchemyError as e:
         logging.error(f"Error adding problem '{problem.title}': {e}")
-        with Session(engine) as session:
-            session.rollback()
         return None
   
 
@@ -54,7 +51,7 @@ def edit_problem(problem: Problem) -> Problem | None:
     try:
         with Session(engine) as session:
             problem_to_edit = session.query(Problem).filter(Problem.id == problem.id).first()
-            
+
             # copy problem to problem_to_edit
             mapper = inspect(problem.__class__)
             for column in mapper.columns:
@@ -66,20 +63,22 @@ def edit_problem(problem: Problem) -> Problem | None:
             session.commit()
             return problem_to_edit
     except Exception as e:
-        print(f"Error editing problem with id={problem.id}: {e}")
+        logging.error(f"Error editing problem with id={problem.id}: {e}")
         return None
+    
 
-       
 def delete_problem(id: str) -> Problem | None:
     try:
         with Session(engine) as session:
-            problem = session.query(Problem).filter(Problem.id == id).first()
-            # problem = session.get(Problem, id)
-            problem.delete()
-            session.commit()
-        return problem
-    except Exception as e:
-        print(f"Error reading problem with id={id}: {e}")
-        return None
+            problem = session.get(Problem, id)
+            if not problem:
+                logging.warning(f"Problem with id={id} not found.")
+                return None
 
-  
+            session.delete(problem)
+            session.commit()
+            return problem
+
+    except SQLAlchemyError as e:
+        logging.error(f"Error deleting problem with id={id}: {e}")
+        return None
