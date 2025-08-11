@@ -1,6 +1,6 @@
 fastapi[standard]
 sqlalchemy
-fastapi[standard]
 pyjwt
 python-multipart
 passlib[bcrypt]
+pytest

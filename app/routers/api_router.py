@@ -53,20 +53,24 @@ from fastapi import Depends, HTTPException
 from .token_router import get_current_user
 
 
-AuthType = str # Annotated[str, Depends(get_current_user)]
+# AuthType = Annotated[str, Depends(get_current_user)]
 
-@router.get("/problems/lang")
-async def get_problems_lang(lang: str, user: AuthType ):
+AuthType = Annotated[str, Depends(lambda : "123")]
+
+@router.get("/problems/lang/{lang}")
+async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
     """
-    GET  /api/problems/lang/{lang}    \n
+    GET  /api/problems/lang/{lang}     \n
     Повертає задачі для заданої мови програмування.
     """
-    problems = db.read_problems_lang(lang)
+    problems: list[Problem] = db.read_problems_lang(lang)
     return problems 
 
 
+
+
 @router.get("/problems/{id}")
-async def get_problems_id(id: str, user: AuthType ):
+async def get_problems_id(id: str, user: AuthType ) -> ProblemSchema:
     """
     GET  /api/problems/{id}     \n
     Повертає задачу з заданим id.
