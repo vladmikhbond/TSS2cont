@@ -36,7 +36,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 #     return pwd_context.verify(plain_password, hashed_password)
 
 def authenticate_user(username: str, password: str) -> bool:
-    if username == 'user':
+    if username == 'user' and password == 'user':
         return True
     return False
 

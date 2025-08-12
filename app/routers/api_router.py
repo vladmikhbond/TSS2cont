@@ -56,16 +56,6 @@ from .token_router import get_current_user
 
 AuthType = Annotated[str, Depends(get_current_user)]
 
-# AuthType = Annotated[str, Depends(lambda : "123")]
-
-# тествий маршрут ####
-@router.get("/protected-route")
-def protected_route(user: AuthType):
-    return {"msg": "This is protected", "user": user}
-# ####################
-
-
-
 @router.get("/problems/lang/{lang}")
 async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
     """
