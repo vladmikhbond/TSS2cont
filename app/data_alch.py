@@ -20,7 +20,7 @@ def read_all_problems() -> list[Problem]:
 def read_problem(id: str) -> Problem|None:
     try:
         with Session(engine) as session:
-            problem = session.query(Problem).filter(Problem.id == id).first()
+            problem = session.query(Problem).filter(Problem.id == id).first()  ###################
         return problem
     except Exception as e:
         print(f"Error reading problem with id={id}: {e}")
@@ -61,6 +61,7 @@ def edit_problem(problem: Problem) -> Problem|None:
                 setattr(problem_to_edit, column.key, value)
 
             session.commit()
+            session.refresh(problem_to_edit) 
             return problem_to_edit
     except Exception as e:
         logging.error(f"Error editing problem with id={problem.id}: {e}")

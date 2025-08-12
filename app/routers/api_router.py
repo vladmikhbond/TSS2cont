@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from .. import data_alch as db
-from ..models.models import Problem, ProofSchema, CheckSchema, ProblemSchema
+from ..models.models import Problem, ProofSchema, CheckSchema, ProblemPostSchema, ProblemSchema
 from ..executors import js
 import re
 
@@ -68,7 +68,6 @@ async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:
 
 
 
-
 @router.get("/problems/{id}")
 async def get_problems_id(id: str, user: AuthType ) -> ProblemSchema:
     """
@@ -82,20 +81,23 @@ async def get_problems_id(id: str, user: AuthType ) -> ProblemSchema:
 
 
 @router.post("/problems")
-async def put_problems(problem_schema: ProblemSchema, user: AuthType) :
+async def post_problems(problem_schema: ProblemPostSchema, user: AuthType) :
     """
     POST /api/problems     \n
     Перевіряє код і, якщо він годний, додає нову задачу в базу даних.
     """
     message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
     if message.startswith("OK"):    
-
         problem = Problem(**problem_schema.model_dump())
  
         added_problem = db.add_problem(problem)
         if added_problem is None:
-            raise HTTPException(status_code=400, detail="The problem is not added")
-    return message
+            raise HTTPException(status_code=400, detail="Cannot add problem to DB")
+        else:
+            return added_problem.id
+    else:
+        raise HTTPException(status_code=400, detail=f"The code not checked. {message}")
+
 
 
 @router.put("/problems")
@@ -108,10 +110,12 @@ async def put_problems(problem_schema: ProblemSchema, user: AuthType):
     if message.startswith("OK"):          
         problem = Problem(**problem_schema.model_dump())
         changed_problem = db.edit_problem(problem)
-        changed_problem.timestamp = dt.datetime.now() 
         if changed_problem is None:
             raise HTTPException(status_code=400, detail="The problem is not changed")
-    return message
+        else:
+            return changed_problem.id
+    else:
+        raise HTTPException(status_code=400, detail=f"The code not checked. {message}")
 
 
 @router.delete("/problems/{id}")
@@ -123,5 +127,5 @@ async def delete_problems_id(id: str, user: AuthType):
     problem = db.delete_problem(id) 
     if problem == None:
         raise HTTPException(status_code=400, detail=f"The problem with id = {id} is not deleted")   
-    problem_schema = ProblemSchema.model_validate(problem)
-    return problem_schema
+    # problem_schema = ProblemSchema.model_validate(problem)
+    return problem

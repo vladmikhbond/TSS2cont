@@ -21,8 +21,7 @@ class Problem(Base):
     author: Mapped[str] = mapped_column(String(10))  
     timestamp: Mapped[str] = mapped_column(DateTime)
 
-class ProblemSchema(BaseModel):
-    id: str
+class ProblemPostSchema(BaseModel):
     title: str
     attr: str
     lang: str
@@ -31,7 +30,13 @@ class ProblemSchema(BaseModel):
     hint: str
     code: str
     author: str
-    timestamp: datetime
+
+    class Config:
+        # orm_mode = True
+        from_attributes=True
+
+class ProblemSchema(ProblemPostSchema):
+    id: str
 
     class Config:
         # orm_mode = True
