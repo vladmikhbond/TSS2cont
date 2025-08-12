@@ -2,6 +2,32 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.models.models import Problem
 
+import pytest
+from datetime import datetime, timedelta, timezone
+import jwt
+from app.routers.token_router import SECRET_KEY, ALGORITHM
+
+# Функція для створення тестового токена
+def create_test_token(username: str):
+
+    expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+    payload = {"sub": username, "exp": expire}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+@pytest.fixture
+def token():
+    return create_test_token("user")
+
+def test_protected_route(token):
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client.get("/api/protected-route", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "msg" in data
+    assert data["msg"] == "This is protected"
+
+
+
 client = TestClient(app)
 
 def test_get_problems_lang():
