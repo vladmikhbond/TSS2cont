@@ -81,14 +81,14 @@ async def get_problems_id(id: str, user: AuthType ) -> ProblemSchema:
 
 
 @router.post("/problems")
-async def post_problems(problem_schema: ProblemPostSchema, user: AuthType) :
+async def post_problems(schema: ProblemPostSchema, user: AuthType) :
     """
     POST /api/problems     \n
     Перевіряє код і, якщо він годний, додає нову задачу в базу даних.
     """
-    message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
+    message = exec_helper(schema.lang, schema.code, timeout=2)
     if message.startswith("OK"):    
-        problem = Problem(**problem_schema.model_dump())
+        problem = Problem(**schema.model_dump())
  
         added_problem = db.add_problem(problem)
         if added_problem is None:
@@ -101,14 +101,14 @@ async def post_problems(problem_schema: ProblemPostSchema, user: AuthType) :
 
 
 @router.put("/problems")
-async def put_problems(problem_schema: ProblemSchema, user: AuthType):
+async def put_problems(schema: ProblemSchema, user: AuthType):
     """
     PUT /api/problems    \n
     Перевіряє код і, якщо він годний, змінює задачу в базі даних.
     """
-    message = exec_helper(problem_schema.lang, problem_schema.code, timeout=2)
+    message = exec_helper(schema.lang, schema.code, timeout=2)
     if message.startswith("OK"):          
-        problem = Problem(**problem_schema.model_dump())
+        problem = Problem(**schema.model_dump())
         changed_problem = db.edit_problem(problem)
         if changed_problem is None:
             raise HTTPException(status_code=400, detail="The problem is not changed")

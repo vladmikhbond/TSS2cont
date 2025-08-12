@@ -20,7 +20,7 @@ def read_all_problems() -> list[Problem]:
 def read_problem(id: str) -> Problem|None:
     try:
         with Session(engine) as session:
-            problem = session.query(Problem).filter(Problem.id == id).first()  ###################
+            problem = session.get(Problem, id)
         return problem
     except Exception as e:
         print(f"Error reading problem with id={id}: {e}")
@@ -50,7 +50,7 @@ def edit_problem(problem: Problem) -> Problem|None:
     problem.timestamp = dt.datetime.now()
     try:
         with Session(engine) as session:
-            problem_to_edit = session.query(Problem).filter(Problem.id == problem.id).first()
+            problem_to_edit = session.get(Problem, problem.id)
 
             # copy problem to problem_to_edit
             mapper = inspect(problem.__class__)
