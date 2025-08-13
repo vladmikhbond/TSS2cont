@@ -18,14 +18,6 @@ def token():
     return create_test_token("testuser")
 
 
-# def test_protected_route(token):
-#     headers = {"Authorization": f"Bearer {token}"}
-#     response = client.get("/api/protected-route", headers=headers)
-#     assert response.status_code == 200
-#     data = response.json()
-#     assert "msg" in data
-#     assert data["msg"] == "This is protected"
-
 client = TestClient(app)
 
 def test_get_problems_lang(token):
