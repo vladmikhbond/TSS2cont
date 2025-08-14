@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from .. import data_alch as db
 from ..models.models import Problem, ProofSchema, CheckSchema, ProblemPostSchema, ProblemSchema
-from ..executors import js
+from ..executors import js, py
 import re
 
 router = APIRouter()
@@ -40,13 +40,19 @@ async def post_proof(schema: ProofSchema) -> str:
 def regex_helper(lang:str):
     if lang == 'js':
         return r"//BEGIN.*//END"
-    return None
+    elif lang == 'py':
+        return r"#BEGIN.*#END"
+    else:
+        return None
 
 
 def exec_helper(lang:str, source: str, timeout: float):
     if lang == 'js':
         return js.exec(source, timeout=timeout)
-    return "Error: Unknown language"
+    elif lang == 'py':
+        return py.exec(source, timeout=timeout)
+    else:
+        return "Error: Unknown language"
 
 # ============ Закриті маршрути =============================
 
