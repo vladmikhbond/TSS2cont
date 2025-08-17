@@ -1,12 +1,17 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "TSS2-contfiner",
-
+	"name": "tss2-contfiner",
 
 	"build": {
-		"dockerfile": "../Dockerfile"
+		"dockerfile": "../Dockerfile",
+		"context": "..",
+		"options": [
+		"--tag",
+		"tss2_image"
+		]
 	},
+
 
 
 	"mounts": [

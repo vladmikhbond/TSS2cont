@@ -1,13 +1,21 @@
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+TODO  
+додати табл Users у БД:   username = "1Ivanov",   password,  role (1 student, 2 tutor, 4 admin)
+заповнити таб з кешем від паролю 123456
+видавати токени згідно з таб Users
+додати юзер інтерфейс для регістрації студенів і викладачів
+---
+протокол виріш задачі у заст ProblemSet
 
+1 увійти з паролем і отримати токен
+2 з токеном отримати умову обраної задачі
+3 надіслати вирішення і отримати відповідь
+
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 uvicorn test:app --host 0.0.0.0 --port 8000 --reload
 
 ---
-TODO  
-команди PUT DELETE
-обробка помилок в DAL
-обробка помилок в фопах
----
+
 POST /api/proof
 {
   "source": "string",
