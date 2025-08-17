@@ -1,3 +1,4 @@
+ 
 # Базовий образ з Python 3.12 + dev tools
 FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 
@@ -27,6 +28,7 @@ RUN python --version && node --version && npm --version
 
 # Копіюємо requirements.txt у контейнер (опціонально — VS Code і сам це зробить)
 COPY requirements.txt /tmp/requirements.txt
+COPY run.py /run.py
 COPY app /app
 
 
@@ -40,4 +42,5 @@ EXPOSE 8000
 # Робоча директорія в контейнері
 WORKDIR /
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "run.py"]
