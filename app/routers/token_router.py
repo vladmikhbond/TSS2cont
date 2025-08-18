@@ -1,6 +1,8 @@
+
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
+import bcrypt
 import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -9,6 +11,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi import APIRouter
 from ..models.models import User
+from .. import data_alch as db
 
 # to get a string like this run:
 # >>> openssl rand -hex 32
@@ -27,20 +30,20 @@ class TokenData(BaseModel):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# def verify_password(plain_password, hashed_password):
-#     return pwd_context.verify(plain_password, hashed_password)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def authenticate_user(username: str, password: str) -> bool:
-    if username == 'user' and password == 'user':
-        return True
-    return False
+    """ Login for token issue """
+    user = db.read_user(username=username)
+    pass_is_ok = bcrypt.checkpw(password.encode('utf-8'), user.password)
+    return pass_is_ok
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     """
-    Створює валідний токен.
+    Create a valid token.
     """
     to_encode = data.copy()
     if expires_delta:
@@ -51,14 +54,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_user(username):
-    return User(username=username, email="aaa.aaa@.aaa")
-
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
-    Перевіряє валідність токену.
-    Знаходить і повертає юзера, чіє ім'я записано в токені.
+    Дегодує токен і виймає з нього ім'я юзера.
+    Знаходить в БД юзера, чіє ім'я записано в токені.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,7 +74,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
     except InvalidTokenError:
         raise credentials_exception
-    user = get_user(username=token_data.username)
+    user = db.read_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -102,7 +102,7 @@ async def login_for_access_token(
 
 
 
-@router.get("/me", response_model=User)
+@router.get("/me")
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):

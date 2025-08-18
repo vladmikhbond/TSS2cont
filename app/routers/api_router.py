@@ -1,4 +1,3 @@
-import datetime as dt
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 

@@ -2,14 +2,46 @@ import datetime as dt
 import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from .models.models import Problem
+from .models.models import Problem, User
 from sqlalchemy.inspection import inspect 
 import logging
 from sqlalchemy.exc import SQLAlchemyError
-
+import bcrypt
 
 engine = create_engine(f"sqlite:////data/TSS2.db", echo=True)
 
+# ===================== Users ======================
+
+def read_all_users() -> list[User]:
+    with Session(engine) as session:
+        users = session.query(User).all()
+    return users
+
+
+def add_user(user: User) -> User|None:
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    user.password = hashed_password
+    try:
+        with Session(engine) as session:
+            session.add(user)
+            session.commit()
+            session.refresh(user) 
+        return user
+    except SQLAlchemyError as e:
+        logging.error(f"Error adding problem '{user.username}': {e}")
+        return None
+
+
+def read_user(username: str) -> User|None:
+    try:
+        with Session(engine) as session:
+            user = session.get(User, username)
+        return user
+    except Exception as e:
+        print(f"Error reading user with id={username}: {e}")
+
+
+# ===================== Problems ======================
 
 def read_all_problems() -> list[Problem]:
     with Session(engine) as session:

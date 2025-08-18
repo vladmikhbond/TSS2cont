@@ -22,6 +22,9 @@ class Problem(Base):
 
 
 class User(Base):
+    """ password hashed
+        role (1 student, 2 tutor, 4 admin) 
+    """
     __tablename__ = "users"
     username: Mapped[str] = mapped_column(primary_key=True)
     password: Mapped[str] = mapped_column(String(255))

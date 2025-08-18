@@ -1,6 +1,6 @@
 TODO  
-додати табл Users у БД:   username = "1Ivanov",   password,  role (1 student, 2 tutor, 4 admin)
-заповнити таб з кешем від паролю 123456
++додати табл Users у БД:   username = "1Ivanov",   password,  role (1 student, 2 tutor, 4 admin)
++заповнити таб з кешем від паролю 123456
 видавати токени згідно з таб Users
 додати юзер інтерфейс для регістрації студенів і викладачів
 ---

@@ -1,16 +1,18 @@
+import bcrypt
+from app import data_alch as db
+from app.models.models import User
 
-# Функція, яку тестують
-def inc(x):
-    return x + 1
+# Оригінальний пароль (введений користувачем)
+password = "123456"
+salt = bcrypt.gensalt()
 
-import pytest
-
-@pytest.fixture
-def mylist():
-    return [1, 2, 3]
+# Генерація солі та хешування пароля
+hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
 
 
-def test_inc(mylist):    # тут параметр mylist = [1, 2, 3]
-    assert inc(5) == 6
+# Зберігайте цей хеш у базі даних
+print(hashed_password.decode())  # Хеш як рядок
 
+# db.add_user(User(username="2Petrenko", password="123456", role=1))
+# db.add_user(User(username="3Sydorenko", password="123456", role=1))
 
