@@ -8,6 +8,7 @@ from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi import APIRouter
+from ..models.models import User
 
 # to get a string like this run:
 # >>> openssl rand -hex 32
@@ -22,10 +23,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
-
-class User(BaseModel):
-    username: str
-    email: str | None = None
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

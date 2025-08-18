@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from .. import data_alch as db
-from ..models.models import Problem, ProofSchema, CheckSchema, ProblemPostSchema, ProblemSchema
+from ..models.models import Problem
+from ..models.schemas import ProofSchema, CheckSchema, ProblemPostSchema, ProblemSchema
 from ..executors import js, py
 import re
 
