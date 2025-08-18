@@ -1,8 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from .. import data_alch as db
-from ..models.models import Problem
+from ..models.models import Problem, User
 from ..models.schemas import ProofSchema, CheckSchema, ProblemPostSchema, ProblemSchema
 from ..executors import js, py
 import re
@@ -61,6 +61,29 @@ from .token_router import get_current_user
 
 
 AuthType = Annotated[str, Depends(get_current_user)]
+
+
+@router.get("/reg/{username}", status_code=201)
+async def register_user(username: str, user: AuthType):
+    """
+    Register a new student.
+    """
+    if user.role < 4:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not admin")    
+    new_user = db.add_user(User(username=username, password="123456", role=1))
+    if new_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User exists")     
+    return new_user;
+
+
+# @router.get("/unreg/{username}")
+
+# @router.get("/reset/{username}")
+
 
 @router.get("/problems/lang/{lang}")
 async def get_problems_lang(lang: str, user: AuthType) -> list[ProblemSchema]:

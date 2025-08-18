@@ -15,7 +15,7 @@ def create_test_token(username: str):
 
 @pytest.fixture
 def token():
-    return create_test_token("testuser")
+    return create_test_token("py")
 
 
 client = TestClient(app)
