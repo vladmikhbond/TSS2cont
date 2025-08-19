@@ -36,7 +36,7 @@ COPY app /app
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
                                  
 # Відкриваємо порт
-EXPOSE 8000
+EXPOSE 7000
 
 
 # Робоча директорія в контейнері
