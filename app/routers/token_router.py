@@ -34,11 +34,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def authenticate_user(username: str, password: str) -> bool:
+def authenticated_user(username: str, password: str) -> User|None:
     """ Login for token issue """
     user = db.read_user(username=username)
     pass_is_ok = bcrypt.checkpw(password.encode('utf-8'), user.password)
-    return pass_is_ok
+    if pass_is_ok:
+        return user
+    return None
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -87,16 +89,17 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()] 
 ) -> Token:
 
-    ok = authenticate_user(form_data.username, form_data.password)
-    if not ok:
+    user = authenticated_user(form_data.username, form_data.password)
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    role = ["", "student", "tutor", "", "admin"][user.role];
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": form_data.username, "role": "student"}, expires_delta=access_token_expires
+        data={"sub": form_data.username, "role": role}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
