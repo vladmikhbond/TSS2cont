@@ -10,7 +10,7 @@ from app.routers.token_router import SECRET_KEY, ALGORITHM
 # Функція для створення тестового токена
 def create_test_token(username: str):
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
-    payload = {"sub": username, "exp": expire}
+    payload = {"sub": username, "exp": expire, "role": "student"}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 @pytest.fixture
@@ -25,6 +25,7 @@ def test_get_problems_lang(token):
     response = client.get("/api/problems/lang/js", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) > 280
+    
     
 def test_get_problems_id(token):
     headers = {"Authorization": f"Bearer {token}"}

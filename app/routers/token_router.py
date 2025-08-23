@@ -57,7 +57,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
-    Дегодує токен і виймає з нього ім'я юзера.
+    Декодує токен і виймає з нього ім'я юзера.
     Знаходить в БД юзера, чіє ім'я записано в токені.
     """
     credentials_exception = HTTPException(
@@ -67,6 +67,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
+        role = payload.get("role")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -95,7 +96,7 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": form_data.username}, expires_delta=access_token_expires
+        data={"sub": form_data.username, "role": "student"}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
